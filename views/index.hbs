@@ -1,0 +1,49 @@
+<h1>{{title}}</h1>
+<p>Welcome to {{title}}</p>
+
+<form action="/api/referral" method="POST">
+  <label for="ref" class="">ref</label>
+  <input type="text" name="ref" id="ref">
+  <label for="text" class="">text</label>
+  <input type="text" name="text" id="text">
+  <button type="submit">Submit</button>
+</form>
+
+<ul id='referral-list'>
+</ul>
+
+<script>
+  (async function () {
+    const dbResponse = await fetch('/api/db')
+    const db = await dbResponse.json()
+
+    const referralList = document.getElementById('referral-list')
+    let listHTML = ''
+    db.referral.forEach(referral => {
+      listHTML += `<li>${referral.ref}: ${referral.text} --- <button class="referral-delete" data-ref="${referral.ref}">delete</button> <a href="http://m.me/491614241033991?ref=${referral.ref}">Test Link</a></li>`
+    })
+    referralList.innerHTML = listHTML
+
+    const referralDeleteButtons = document.querySelectorAll('.referral-delete')
+    referralDeleteButtons.forEach(button => {
+      button.addEventListener('click', function (event) {
+        const target = event.target
+
+        console.log(target.dataset.ref)
+        fetch('/api/referral', {
+          method: 'DELETE',
+          body: JSON.stringify({ ref: target.dataset.ref }),
+          headers: new Headers({
+            'Content-Type': 'application/json'
+          })
+        }).then(res => res.json())
+          .catch(error => console.error('Error:', error))
+          .then(response => {
+            console.log('Success:', response)
+            location.reload();
+          });
+      })
+    })
+  })()
+
+</script>
